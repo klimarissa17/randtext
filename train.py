@@ -3,9 +3,11 @@ import argparse
 from collections import defaultdict
 import sys
 import os
-import random
+
 
 alph = re.compile(u'[a-zA-Zа-яА-ЯёЁ-]+|[.,:;?!]+')
+
+
 def words_gen(string):
     for word in alph.findall(string):
         yield word
@@ -26,11 +28,11 @@ def create_parser():
     parser.add_argument("--model",
                         help="path to the .txt where model will be saved")
     parser.add_argument("--lc", action="store_true",
-                        help = "all texts to lowercase")
+                        help="all texts to lowercase")
     return parser.parse_args()
 
 
-def train(f, lc, model):  #f is instream
+def train(f, lc, model):  # f is instream
     bi = defaultdict(lambda: 0)
     for s in f:
         if lc:
@@ -43,16 +45,6 @@ def train(f, lc, model):  #f is instream
         else:
             model[t0] = [(t1, bi[t0, t1])]
 
-
-#f1 = open('model.txt', 'w', encoding="utf8")
-#res = train()
-#res.pop('')
-
-#for word in res.keys():
-   # s1 = word + ': '+ ' '.join([str(i) for i in res.get(word)]) + '\n'
-  #  f1.write(s1)
- #   del s1
-#f1.close()
 
 def save_model(f, model):
     for i in model:
