@@ -3,9 +3,10 @@ import argparse
 from collections import defaultdict
 import sys
 import os
+import pickle
 
 
-alph = re.compile(u'[a-zA-Zа-яА-ЯёЁ-]+|[.,:;?!]+')
+alph = re.compile(u'[a-zA-Z]+|[.,:;?!]+')
 
 
 def words_gen(string):
@@ -14,10 +15,10 @@ def words_gen(string):
 
 
 def bigram_gen(string):
-    t0 = ''
-    for t1 in words_gen(string):
-        yield t0, t1
-        t0 = t1
+    token_0 = ''
+    for token_1 in words_gen(string):
+        yield token_0, token_1
+        token_0 = token_1
 
 
 def create_parser():
@@ -37,23 +38,25 @@ def train(f, lc, model):  # f is instream
     for s in f:
         if lc:
             s = s.lower()
-        for t0, t1 in bigram_gen(s):
-            bi[t0, t1] += 1
-    for (t0, t1) in bi.keys():
-        if t0 in model:
-            model[t0].append((t1, bi[t0, t1]))
+        for token_0, token_1 in bigram_gen(s):
+            bi[token_0, token_1] += 1
+    for (token_0, token_1) in bi.keys():
+        if token_0 in model:
+            model[token_0].append((token_1, bi[token_0, token_1]))
         else:
-            model[t0] = [(t1, bi[t0, t1])]
+            model[token_0] = [(token_1, bi[token_0, token_1])]
 
 
 def save_model(f, model):
-    for i in model:
-        if i == '':
-            continue
-        f.write(i + ' ')
-        for j, num in model[i]:
-            f.write(j + ' ' + str(num) + ' ')
-        f.write('\n')
+    with open (f, 'wb') as file:
+        pickle.dump(model, file)
+        """for i in model:
+            if i == '':
+                continue
+            f.write(i + ' ')
+            for j, num in model[i]:
+                f.write(j + ' ' + str(num) + ' ')
+            f.write('\n')"""
 
 
 args = create_parser()
@@ -62,9 +65,9 @@ if args.input_dir is None:
     train(sys.stdin, args.lc, model)
 else:
     for filename in os.listdir(args.input_dir):
-        instream = open(args.input_dir + '/' + filename, 'r')
-        train(instream, args.lc, model)
-        instream.close()
-outstream = open(args.model, "w")
-save_model(outstream, model)
-outstream.close()
+        with open(args.input_dir + '/' + filename, 'r') as instream:
+            train(instream, args.lc, model)
+
+#with open(args.model, "wb") as outstream:
+   # save_model(outstream, model)
+save_model(args.model, model)
