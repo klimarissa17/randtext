@@ -18,17 +18,6 @@ def create_parser():
     return parser.parse_args()
 
 
-"""def parse_model(f):
-    model = dict()
-    for s in f:
-        lst = s.split()
-        x = lst[0]
-        model[x] = dict()
-        for i in range(1, len(lst) - 1, 2):
-            model[x][lst[i]] = int(lst[i + 1])
-    return model"""
-
-
 def gen(file, model, start, n):
     token_0 = start
 
