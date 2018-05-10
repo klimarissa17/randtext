@@ -6,7 +6,7 @@ import os
 import pickle
 
 
-alph = re.compile(u'[a-zA-Z]+|[.,:;?!]+')
+alph = re.compile(u'[a-zA-Zа-яА-ЯёЁ]+|[.,:;?!]+')
 
 
 def words_gen(string):
@@ -14,7 +14,7 @@ def words_gen(string):
         yield word
 
 
-def bigram_gen(string):
+def bigramsgram_gen(string):
     token_0 = ''
     for token_1 in words_gen(string):
         yield token_0, token_1
@@ -33,30 +33,23 @@ def create_parser():
     return parser.parse_args()
 
 
-def train(f, lc, model):  # f is instream
-    bi = defaultdict(lambda: 0)
-    for s in f:
+def train(instream, lc, model):
+    bigrams = defaultdict(lambda: 0)
+    for current_string in instream:
         if lc:
-            s = s.lower()
-        for token_0, token_1 in bigram_gen(s):
-            bi[token_0, token_1] += 1
-    for (token_0, token_1) in bi.keys():
+            current_string = current_string.lower()
+        for token_0, token_1 in bigramsgram_gen(current_string):
+            bigrams[token_0, token_1] += 1
+    for (token_0, token_1) in bigrams.keys():
         if token_0 in model:
-            model[token_0].append((token_1, bi[token_0, token_1]))
+            model[token_0].append((token_1, bigrams[token_0, token_1]))
         else:
-            model[token_0] = [(token_1, bi[token_0, token_1])]
+            model[token_0] = [(token_1, bigrams[token_0, token_1])]
 
 
 def save_model(f, model):
     with open (f, 'wb') as file:
         pickle.dump(model, file)
-        """for i in model:
-            if i == '':
-                continue
-            f.write(i + ' ')
-            for j, num in model[i]:
-                f.write(j + ' ' + str(num) + ' ')
-            f.write('\n')"""
 
 
 args = create_parser()
@@ -68,6 +61,5 @@ else:
         with open(args.input_dir + '/' + filename, 'r') as instream:
             train(instream, args.lc, model)
 
-#with open(args.model, "wb") as outstream:
-   # save_model(outstream, model)
+
 save_model(args.model, model)

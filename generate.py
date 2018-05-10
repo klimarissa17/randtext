@@ -2,7 +2,7 @@ import re
 import random
 import argparse
 import sys
-
+import pickle
 
 def create_parser():
     parser = argparse.ArgumentParser(
@@ -18,7 +18,7 @@ def create_parser():
     return parser.parse_args()
 
 
-def parse_model(f):
+"""def parse_model(f):
     model = dict()
     for s in f:
         lst = s.split()
@@ -26,38 +26,38 @@ def parse_model(f):
         model[x] = dict()
         for i in range(1, len(lst) - 1, 2):
             model[x][lst[i]] = int(lst[i + 1])
-    return model
+    return model"""
 
 
-def gen(f, model, start, n):
-    t0 = start
+def gen(file, model, start, n):
+    token_0 = start
 
-    def text_gen(t0):
+    def text_gen(token_0):
         for k in range(n):
-            if t0 not in model:
-                t0 = random.choice(list(model.keys()))
-            yield t0
+            if token_0 not in model:
+                token_0 = random.choice(list(model.keys()))
+            yield token_0
             lst = list()
-            for i1 in model[t0]:
-                for j in range(int(model[t0][i1])):
-                    lst.append(i1)
-            t1 = random.choice(lst)
+            for i in model[token_0]:  # type: object
+                for j in range(i[1]):#model[token_0][i1])):
+                    lst.append(i)
+            token_1 = random.choice(lst)
             lst.clear()
-            t0 = t1
+            token_0 = token_1
 
-    s1 = re.sub(r' ([.,;!?:])', r'\1', ' '.join(text_gen(t0)))
-    f.write(s1 + '\n')
-    del s1
+    clean_string = re.sub(r' ([.,;!?:])', r'\1', ' '.join(text_gen(token_0)))
+    file.write(clean_string + '\n')
+    del clean_string
 
 
 args = create_parser()
 
-f = open(args.model, "r", encoding='utf8')
-model = parse_model(f)
-f.close()
+with open(args.model, 'rb') as file:
+    model = pickle.load(file)
+
 
 if args.output is None:
     gen(sys.stdout, model, args.seed, int(args.length))
 else:
-    f = open(args.output, "w")
-    gen(f, model, args.seed, int(args.length))
+    with open(args.output, "w") as file:
+        gen(file, model, args.seed, int(args.length))
